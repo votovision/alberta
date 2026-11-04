@@ -2,8 +2,10 @@
  * Prévision de l'élection générale de l'Alberta du 18 octobre 2027 : départ
  * résultats de 2023 (carte de 2019, 87 circonscriptions) ; composition
  * provinciale = tendance GP des sondages provinciaux du cycle, prédite à la
- * date du scrutin (moyenne et tirages) ; choc systémique CLR de variance
- * tau² / s (tau estimé sur la veille de 2023) ; swing par transfert dans la
+ * date du scrutin pendant la campagne, à la date du jour avant le
+ * déclenchement (moyenne et tirages) ; choc systémique CLR de variance
+ * tau² / s (tau estimé sur la veille albertaine de 2023 et les veilles de la
+ * C.-B. de 2020 et de 2024, lib/veilles_bc.mjs) ; swing par transfert dans la
  * moitié des tirages et additif dans l'autre ; écart local tiré parmi les
  * erreurs de la transition 2019-2023. Tous les partis sont supposés présents
  * partout tant que les candidatures de 2027 ne sont pas connues. Écrit
@@ -16,6 +18,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { ridings, aggregate, presenceFromResults, coverageTarget, transferSwing, TRANSITIONS, P, MAIN, REGIONS, winnerOf } from "../lib/ab.mjs";
 import { simulate, localResiduals, systemicTau, interval } from "../lib/simulate.mjs";
 import { loadBreakdowns, pooled, regionalShift } from "../lib/regional.mjs";
+import { veillesBc } from "../lib/veilles_bc.mjs";
 import { cyclePolls, withoutWithdrawn } from "./eve_national.mjs";
 import { seatDistributions, governmentScenarios } from "../src/simulate.js";
 import { fitTrend, predictTrend, sampleTrendDraws, predictTrendSeries } from "../src/gpTrend.js";
@@ -40,7 +43,8 @@ const hist = TRANSITIONS.map((T) => {
   const real = Object.fromEntries(REGIONS.map((g) => [g, aggregate([...B.values()].filter((y) => y.region === g))]));
   return { T, B, list, real, presence: presenceFromResults(B), actual: aggregate([...B.values()]) };
 });
-const tau = systemicTau(hist.map((h) => ({ actual: h.actual, eve: eve[h.T.id].point })));
+// Choc systémique estimé sur la veille albertaine de 2023 et les veilles de la C.-B. de 2020 et de 2024.
+const tau = systemicTau([...hist.map((h) => ({ actual: h.actual, eve: eve[h.T.id].point })), ...veillesBc()]);
 const FORMS = ["transfert", "additif"];
 const pool = Object.fromEntries(FORMS.map((f) => [f, hist.flatMap((h) => localResiduals(h.list, (x) => h.B.get(x.code).shares, h.real, h.presence, f))]));
 
@@ -51,7 +55,12 @@ const presence = () => P.map(() => true);
 // Tendance provinciale du cycle, prédite à la date du scrutin.
 const { polls, partyCodes, withdrawn } = cyclePolls(LAST[0], asOf <= ELECTION ? new Date(Date.parse(asOf) + 864e5).toISOString().slice(0, 10) : ELECTION);
 const model = fitTrend(polls, partyCodes, { calendar });
-const target = asOf < ELECTION ? ELECTION : asOf;
+// Horizon : avant le déclenchement (campagne de ELECTION absente du calendrier ou pas commencée),
+// la tendance est prédite à la date du jour (« si l'élection avait lieu aujourd'hui ») ;
+// pendant la campagne, à la date du scrutin.
+const campagne = calendar.campaigns.find(([, fin]) => fin === ELECTION);
+const horizon = campagne && asOf >= campagne[0] ? "scrutin" : "aujourdhui";
+const target = horizon === "scrutin" && asOf < ELECTION ? ELECTION : asOf;
 const pred = predictTrend(model, target, { nSamples: 400, seed: 9 });
 const trendPoint = withoutWithdrawn(P.map((p) => pred[p]?.mean ?? 0), withdrawn);
 const draws = sampleTrendDraws(model, target, 400, 9).map((d) => withoutWithdrawn(P.map((p) => d[p] ?? 0), withdrawn));
@@ -108,7 +117,7 @@ for (let i = 0; i < seatDraws.length; i++) {
 const ZONE_NAMES = { CGY: "Calgary", EDM: "Edmonton", RESTE: "Reste de la province" };
 const national = aggregate(list.map((x, i) => ({ ...x, s: sim.point[i] })), (x) => x.s);
 const dash = {
-  meta: { generatedAt: new Date().toISOString(), asOf, electionDate: ELECTION, nDraws: N, gallagherPrevious, projectedVote: Object.fromEntries(P.map((p, j) => [p, national[j]])),
+  meta: { generatedAt: new Date().toISOString(), asOf, electionDate: ELECTION, horizon, targetDate: target, nDraws: N, gallagherPrevious, projectedVote: Object.fromEntries(P.map((p, j) => [p, national[j]])),
     nPolls: polls.length, nRegionalPolls: regPolls.filter((q2) => q2.date > LAST[0] && q2.date <= asOf).length, nRidings: list.length, baseElection: LAST[0], tau, kappa: KAPPA },
   partyCodes: shown, trendPartyCodes: P.filter((p) => trendSeries.some((r) => r[p])), totalSeats: list.length, trendSeries,
   ridingForecast: Object.fromEntries(list.map((x, i) => [x.code, { shares: Object.fromEntries(P.map((p, j) => [p, sim.point[i][j]])), winner: winnerOf(sim.point[i]) }])),

@@ -14,7 +14,8 @@
  *    fichier est ignoré par git.
  *
  * Partis du modèle : ABP (Parti albertain) devient TORY, son nom depuis
- * décembre 2025 ; WLC, RPA, IPA, SMA et les autres vont dans AUTRES.
+ * décembre 2025 ; les Verts, les libéraux, le WIP et les autres vont dans
+ * AUTRES (lib/ab.mjs).
  *
  * Run: node ingest/depuis_data.mjs [chemin du dépôt data]
  */
@@ -26,7 +27,7 @@ const ICI = fileURLToPath(new URL(".", import.meta.url));
 const DATA = resolve(process.argv[2] ?? join(ICI, "..", "..", "data"));
 const OUT = new URL("../data/", import.meta.url);
 const JURIDICTION = "ab-provincial";
-const PARTIS = { UCP: "UCP", NDP: "NDP", ABP: "TORY", TORY: "TORY", GRN: "GRN", LIB: "LIB", WIP: "WIP" };
+const PARTIS = { UCP: "UCP", NDP: "NDP", ABP: "TORY", TORY: "TORY" };
 const parti = (p) => PARTIS[p] ?? "AUTRES";
 
 function lireCsv(chemin) {

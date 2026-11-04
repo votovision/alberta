@@ -3,7 +3,8 @@
  * provinciale tirée de la tendance de veille (ab_eve_national.json), choc
  * systémique et bassin d'erreurs locales estimés sur les autres transitions ;
  * l'Alberta n'en a qu'une (2019 -> 2023, même carte) : ils sont alors estimés
- * sur cette même transition, validation EN ÉCHANTILLON, optimiste, présence des partis d'après les
+ * sur cette même transition pour le bassin d'erreurs locales (EN ÉCHANTILLON,
+ * optimiste) ; le choc systémique vient des veilles de la C.-B. (hors échantillon), présence des partis d'après les
  * candidatures (résultats visés), cibles régionales selon `--kappa` (0 :
  * cible provinciale partout). Rapporte sièges médians et intervalles à 90 %
  * contre le résultat, gagnants corrects du scénario ponctuel, score de Brier
@@ -15,6 +16,7 @@ import { readFileSync } from "node:fs";
 import { ridings, aggregate, presenceFromResults, coverageTarget, transferSwing, TRANSITIONS, MAIN, REGIONS, winnerOf } from "../lib/ab.mjs";
 import { simulate, localResiduals, systemicTau, interval } from "../lib/simulate.mjs";
 import { loadBreakdowns, pooled, regionalShift } from "../lib/regional.mjs";
+import { veillesBc } from "../lib/veilles_bc.mjs";
 
 const calendar = JSON.parse(readFileSync(new URL("../data/ab_calendar.json", import.meta.url), "utf-8"));
 const SPEC = { tau: 120, D: 16, campaigns: calendar.campaigns };
@@ -33,7 +35,8 @@ const H = TRANSITIONS.map((T) => {
 for (const h of H) {
   const autres = H.filter((o) => o !== h), other = autres.length ? autres : [h];
   if (!autres.length) console.log(`${h.T.id} : une seule transition, validation en échantillon`);
-  const tau = systemicTau(other.map((o) => ({ actual: o.actualProv, eve: eve[o.T.id].point })), ISO);
+  // Choc systémique hors échantillon : veilles des autres transitions albertaines et de la C.-B.
+  const tau = systemicTau([...autres.map((o) => ({ actual: o.actualProv, eve: eve[o.T.id].point })), ...veillesBc()], ISO);
   const poolFor = (f) => other.flatMap((o) => localResiduals(o.list, (x) => o.B.get(x.code).shares, o.real, o.presence, f)).map((e) => e.map((v) => v * SCALE));
   const pool = FORM === "mixte" ? { transfert: poolFor("transfert"), additif: poolFor("additif") } : poolFor(FORM);
   const cov = (v) => (process.argv.includes("--couverture") ? coverageTarget(h.list, v, h.presence) : v);

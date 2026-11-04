@@ -7,7 +7,7 @@ Modèle de prévision des élections générales de l'Alberta (Votovision), adap
 | Dossier | Contenu |
 |---|---|
 | `src/` | Moteur commun : tendance des sondages par processus gaussien en log-ratios isométriques, compositions, résumés de simulation. |
-| `lib/` | Modèle de l'Alberta : swing par transfert avec présence des partis, régions (Calgary, Edmonton, reste), simulation des sièges. |
+| `lib/` | Modèle de l'Alberta : swing par transfert avec présence des partis, régions (Calgary, Edmonton, reste), simulation des sièges ; choc systémique estimé avec les veilles de la C.-B. (`lib/veilles_bc.mjs`, dépôt `votovision/bc` cloné à côté). |
 | `tools/` | Validation (transition 2019-2023) et prévision courante (`project_now.mjs`). |
 | `ingest/` | Entrées du modèle tirées du dépôt de données `votovision/data`. |
 | `data/` | Entrées et sorties du modèle (JSON). |
