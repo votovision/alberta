@@ -1,7 +1,7 @@
 {
-  "name": "votovision-bc",
+  "name": "votovision-alberta",
   "version": "0.1.0",
-  "description": "Modèle de prévision des élections générales de la Colombie-Britannique (Votovision)",
+  "description": "Modèle de prévision des élections générales de l'Alberta (Votovision)",
   "type": "module",
   "license": "GPL-3.0-only",
   "scripts": {
