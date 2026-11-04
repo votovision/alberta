@@ -1,0 +1,8 @@
+node_modules/
+# Données d'Elections Alberta : republication modifiée interdite sans permission écrite.
+data/ab_riding_results.json
+data/ab_results.json
+TODO.md
+JOURNAL.md
+CLAUDE.md
+AGENT.md

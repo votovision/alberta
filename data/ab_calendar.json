@@ -1,0 +1,19 @@
+{
+ "note": "Points de rupture : élection d'un chef des partis principaux et recompositions du système de partis (Wikipédia en anglais, pages des partis et des élections générales) ; campagnes : déclenchement et scrutin (Elections Alberta). La campagne de 2027 sera ajoutée au déclenchement. L'effet de chaque point de rupture est un hyperparamètre ajusté (rho = 1 : aucun effet).",
+ "changepoints": [
+  "2017-10-28",
+  "2022-10-06",
+  "2024-06-22",
+  "2025-12-18"
+ ],
+ "events": {
+  "2017-10-28": "Jason Kenney élu chef du Parti conservateur uni",
+  "2022-10-06": "Danielle Smith élue cheffe du Parti conservateur uni",
+  "2024-06-22": "Naheed Nenshi élu chef du NPD albertain",
+  "2025-12-18": "Le Parti albertain devient le Progressive Tory Party of Alberta"
+ },
+ "campaigns": [
+  ["2019-03-19", "2019-04-16"],
+  ["2023-05-01", "2023-05-29"]
+ ]
+}
