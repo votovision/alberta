@@ -6,19 +6,7 @@
 
 import { mva } from "@tangent.to/ds";
 
-const { closure } = mva.composition;
-
-/** Remplacement multiplicatif des zéros (Martín-Fernández et al., 2003) :
- * delta pour chaque zéro, parts non nulles multipliées par (1 - somme des
- * delta), sur la composition fermée. @tangent.to/ds retranche plutôt un même
- * montant à chaque part non nulle, ce qui rend négative une petite part
- * (WIP à 0,8 % avec deux zéros, sondages albertains de 2022-2023). */
-function multiplicativeReplacement(mat, delta) {
-  return mat.map((row) => {
-    const total = row.reduce((a, b) => a + b, 0), zeros = row.filter((x) => x === 0).length;
-    return row.map((x) => (x === 0 ? delta : (x / total) * (1 - zeros * delta)));
-  });
-}
+const { closure, multiplicativeReplacement } = mva.composition;
 
 /**
  * Pivot long-format poll rows (one row per poll x party, as exported by
